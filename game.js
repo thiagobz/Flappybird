@@ -10,9 +10,11 @@ let flappy = {
     spriteX: 0,
     spriteY: 0,
     largura: 33,
-    altura: 24,
+    altura: 23,
     x: 10,
-    y: canvas.height / 2,
+    y: canvas.height / 3,
+    gravity: 0.25,
+    speed: 0,
     desenha() {
         contexto.drawImage(
             sprites,
@@ -21,6 +23,16 @@ let flappy = {
             flappy.x, flappy.y,
             flappy.largura, flappy.altura,
         );
+    },
+    flappyUpdate(){
+        flappy.speed = flappy.speed + flappy.gravity;
+        console.log(flappy.speed);
+        flappy.y = flappy.y + flappy.speed;
+    },
+    flappyColid(){
+        if(flappy.y + flappy.altura >= floor.y){
+            flappy.y = floor.y - flappy.altura
+        }
     }
 }
 
@@ -78,6 +90,8 @@ let background = {
     }
 }
 function loop() {
+    flappy.flappyUpdate()
+    flappy.flappyColid()
     background.desenha()
     floor.desenha()
     flappy.desenha()
