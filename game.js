@@ -1,40 +1,64 @@
 console.log('Flappy Bird V0.01');
 
+const hitSound = new Audio()
+hitSound.src = './assets/Sounds/efeitos_hit.wav'
+
 const sprites = new Image()
 sprites.src = './assets/sprites.png'
 
 const canvas = document.getElementById('game-canvas');
 const contexto = canvas.getContext('2d');
 
-const flappy = {
-    spriteX: 0,
-    spriteY: 0,
-    largura: 33,
-    altura: 23,
-    x: 10,
-    y: canvas.height / 3,
-    gravity: 0.25,
-    speed: 0,
-    draw() {
-        contexto.drawImage(
-            sprites,
-            flappy.spriteX, flappy.spriteY, //Posição do sprite no arquivo.
-            flappy.largura, flappy.altura, //tamanho do sprite na imagem
-            flappy.x, flappy.y,
-            flappy.largura, flappy.altura,
-        );
-    },
-    flappyUpdate(){
-        flappy.speed = flappy.speed + flappy.gravity;
-        flappy.y = flappy.y + flappy.speed;
-        console.log(flappy.speed);
-    },
-    flappyColid(){
-        if(flappy.y + flappy.altura >= floor.y){
-            flappy.y = floor.y - flappy.altura
-        }
+function flappyColide(flappyBird, floor){
+    const flappyY = globals.flappy.y + globals.flappy.altura
+    const floorY = floor.y
+    if(flappyY >= floorY){
+        return true
     }
+        return false
 }
+
+function createFlappy(){
+    const flappy = {
+        spriteX: 0,
+        spriteY: 0,
+        largura: 33,
+        altura: 23,
+        x: 10,
+        y: canvas.height / 3,
+        jump: 4.6,
+        jumping(){
+            console.log('Devo Pular')
+            console.log('[antes]', flappy.speed)
+            flappy.speed =- flappy.jump;
+            console.log('[depois]', flappy.speed)
+        },
+        gravity: 0.25,
+        speed: 0,
+        flappyUpdate(){
+            if(flappyColide(flappy, floor)){
+                console.log('Colidiu')
+                hitSound.play()
+                changeScreen(screens.START)
+    
+                return;
+            }
+    
+            flappy.speed = flappy.speed + flappy.gravity;
+            flappy.y = flappy.y + flappy.speed;
+        },
+        draw() {
+            contexto.drawImage(
+                sprites,
+                flappy.spriteX, flappy.spriteY, //Posição do sprite no arquivo.
+                flappy.largura, flappy.altura, //tamanho do sprite na imagem
+                flappy.x, flappy.y,
+                flappy.largura, flappy.altura,
+            );
+        },
+    }
+    return flappy;
+};
 
 const floor = {
     spriteX:0,
@@ -43,6 +67,9 @@ const floor = {
     altura: 113,
     x: 0,
     y:canvas.height - 113,
+    // floorUpdate(){
+    //     floor.x -= 1
+    // },
     draw() {
         contexto.drawImage(
             sprites,
@@ -109,38 +136,56 @@ const messageGetReady = {
     
 }
 
+//
+// TELA
+//
+
+const globals = {}
 let activeScreen = {}
 
 function changeScreen(newScreen) {
     activeScreen = newScreen
+
+    if(activeScreen.inicialize){
+        activeScreen.inicialize();
+    }
 }
 
 const screens = {
     START: {
+        inicialize() {
+            globals.flappy = createFlappy()
+        },
+
         draw(){
             background.draw()
             floor.draw()
-            flappy.draw()
+            globals.flappy.draw()
             messageGetReady.draw()
         },
+
         click(){
             changeScreen(screens.GAME)
         },
-        update(){
 
+        update(){
         },
     }
 }
 
 screens.GAME = {
-    draw() {
+    draw(){
         background.draw()
         floor.draw()
-        flappy.draw()
+        globals.flappy.draw()
     },
+
+    click(){
+        globals.flappy.jumping()
+    },
+
     update(){
-        flappy.flappyUpdate()
-        flappy.flappyColid()
+        globals.flappy.flappyUpdate()
     },
 }
 
@@ -158,5 +203,4 @@ function loop() {
 }
 
 changeScreen(screens.START)
-loop(30)
-
+loop()
